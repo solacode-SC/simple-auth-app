@@ -1,17 +1,176 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css">
-
 </head>
 <body>
-  <h2>Sign Up</h2>
-  <form method="POST">
-    Username: <input type="text" name="username" required><br><br>
-    Password: <input type="password" name="password" required><br><br>
-    <button type="submit">Register</button>
-  </form>
-  <p>Already have an account? <a href="/login">Login</a></p>
+    <div class="floating-elements"></div>
+    
+    <div class="container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1 class="auth-title">Create Account</h1>
+                <p class="auth-subtitle">Join us today</p>
+            </div>
+            
+            <form method="POST" id="signupForm">
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-input" required>
+                </div>
+                
+                <button type="submit" class="auth-btn">Create Account</button>
+            </form>
+            
+            <div class="auth-link">
+                <p>Already have an account? <a href="/login">Sign In</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Floating elements animation
+        function createFloatingElements() {
+            const container = document.querySelector('.floating-elements');
+            const elementCount = 15;
+            
+            for (let i = 0; i < elementCount; i++) {
+                const element = document.createElement('div');
+                element.className = 'floating-element';
+                element.style.left = Math.random() * 100 + '%';
+                element.style.animationDelay = Math.random() * 15 + 's';
+                element.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(element);
+            }
+        }
+
+        // Show message function
+        function showMessage(message, type = 'error') {
+            const existingMessage = document.querySelector('.error-message, .success-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+            messageDiv.textContent = message;
+            
+            const form = document.getElementById('signupForm');
+            form.insertBefore(messageDiv, form.firstChild);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        // Form submission with validation and loading state
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                e.preventDefault();
+                showMessage('Please fill in all fields', 'error');
+                return;
+            }
+            
+            if (password.length < 4) {
+                e.preventDefault();
+                showMessage('Password must be at least 4 characters long', 'error');
+                return;
+            }
+            
+            if (username.length < 3) {
+                e.preventDefault();
+                showMessage('Username must be at least 3 characters long', 'error');
+                return;
+            }
+            
+            // Add loading state
+            const button = this.querySelector('.auth-btn');
+            const originalText = button.textContent;
+            button.textContent = 'Creating Account...';
+            button.disabled = true;
+            
+            // Reset button after form submission (in case of error)
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+            }, 3000);
+        });
+
+        // Input focus effects
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentNode.querySelector('.form-label').style.color = '#667eea';
+            });
+            
+            input.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.parentNode.querySelector('.form-label').style.color = '#374151';
+                }
+            });
+        });
+
+        // Real-time password validation
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const label = this.parentNode.querySelector('.form-label');
+            
+            if (password.length > 0 && password.length < 4) {
+                label.style.color = '#ef4444';
+                label.textContent = 'Password (min 4 characters)';
+            } else if (password.length >= 4) {
+                label.style.color = '#10b981';
+                label.textContent = 'Password ✓';
+            } else {
+                label.style.color = '#374151';
+                label.textContent = 'Password';
+            }
+        });
+
+        // Real-time username validation
+        document.getElementById('username').addEventListener('input', function() {
+            const username = this.value;
+            const label = this.parentNode.querySelector('.form-label');
+            
+            if (username.length > 0 && username.length < 3) {
+                label.style.color = '#ef4444';
+                label.textContent = 'Username (min 3 characters)';
+            } else if (username.length >= 3) {
+                label.style.color = '#10b981';
+                label.textContent = 'Username ✓';
+            } else {
+                label.style.color = '#374151';
+                label.textContent = 'Username';
+            }
+        });
+
+        // Initialize floating elements
+        createFloatingElements();
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const messages = document.querySelectorAll('.error-message, .success-message');
+                messages.forEach(msg => msg.remove());
+            }
+        });
+
+        // Display flash messages if any
+        {% if get_flashed_messages() %}
+            {% for message in get_flashed_messages() %}
+                showMessage('{{ message }}', 'error');
+            {% endfor %}
+        {% endif %}
+    </script>
 </body>
 </html>

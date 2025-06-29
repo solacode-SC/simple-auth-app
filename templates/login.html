@@ -1,17 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css">
-
 </head>
 <body>
-  <h2>Login</h2>
-  <form method="POST">
-    Username: <input type="text" name="username" required><br><br>
-    Password: <input type="password" name="password" required><br><br>
-    <button type="submit">Login</button>
-  </form>
-  <p>Don't have an account? <a href="/signup">Sign Up</a></p>
+    <div class="floating-elements"></div>
+    
+    <div class="container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1 class="auth-title">Welcome Back</h1>
+                <p class="auth-subtitle">Sign in to your account</p>
+            </div>
+            
+            <form method="POST" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-input" required>
+                </div>
+                
+                <button type="submit" class="auth-btn">Sign In</button>
+            </form>
+            
+            <div class="auth-link">
+                <p>Don't have an account? <a href="/signup">Sign Up</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Floating elements animation
+        function createFloatingElements() {
+            const container = document.querySelector('.floating-elements');
+            const elementCount = 15;
+            
+            for (let i = 0; i < elementCount; i++) {
+                const element = document.createElement('div');
+                element.className = 'floating-element';
+                element.style.left = Math.random() * 100 + '%';
+                element.style.animationDelay = Math.random() * 15 + 's';
+                element.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(element);
+            }
+        }
+
+        // Show message function
+        function showMessage(message, type = 'error') {
+            const existingMessage = document.querySelector('.error-message, .success-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+            messageDiv.textContent = message;
+            
+            const form = document.getElementById('loginForm');
+            form.insertBefore(messageDiv, form.firstChild);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        // Form submission with loading state
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                e.preventDefault();
+                showMessage('Please fill in all fields', 'error');
+                return;
+            }
+            
+            // Add loading state
+            const button = this.querySelector('.auth-btn');
+            const originalText = button.textContent;
+            button.textContent = 'Signing In...';
+            button.disabled = true;
+            
+            // Reset button after form submission (in case of error)
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+            }, 3000);
+        });
+
+        // Input focus effects
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentNode.querySelector('.form-label').style.color = '#667eea';
+            });
+            
+            input.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.parentNode.querySelector('.form-label').style.color = '#374151';
+                }
+            });
+        });
+
+        // Initialize floating elements
+        createFloatingElements();
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const messages = document.querySelectorAll('.error-message, .success-message');
+                messages.forEach(msg => msg.remove());
+            }
+        });
+
+        // Display flash messages if any
+        {% if get_flashed_messages() %}
+            {% for message in get_flashed_messages() %}
+                showMessage('{{ message }}', 'error');
+            {% endfor %}
+        {% endif %}
+    </script>
 </body>
 </html>

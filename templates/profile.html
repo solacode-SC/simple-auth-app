@@ -1,13 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css">
-
 </head>
 <body>
-  <h2>Welcome, {{ username }}!</h2>
-  <p>This is your profile page.</p>
-  <a href="/logout">Logout</a>
+    <div class="floating-elements"></div>
+    
+    <div class="container">
+        <div class="auth-card profile-page">
+            <div class="profile-avatar" id="profileAvatar">
+                {{ username[0].upper() if username else 'U' }}
+            </div>
+            <h1 class="profile-welcome">Welcome, {{ username }}!</h1>
+            <p class="profile-info">
+                You have successfully logged into your account. This is your personal dashboard where you can manage your profile and preferences.
+            </p>
+            
+            <div class="profile-stats" style="margin: 30px 0;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                    <div style="background: rgba(102, 126, 234, 0.1); padding: 20px; border-radius: 16px; text-align: center; border: 1px solid rgba(102, 126, 234, 0.2);">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #667eea; margin-bottom: 8px;">Active</div>
+                        <div style="color: #6b7280; font-size: 0.875rem;">Account Status</div>
+                    </div>
+                    <div style="background: rgba(34, 197, 94, 0.1); padding: 20px; border-radius: 16px; text-align: center; border: 1px solid rgba(34, 197, 94, 0.2);">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #10b981; margin-bottom: 8px;">{{ username|length }}</div>
+                        <div style="color: #6b7280; font-size: 0.875rem;">Username Length</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="auth-btn logout-btn" onclick="logout()">Sign Out</button>
+        </div>
+    </div>
+
+    <script>
+        // Floating elements animation
+        function createFloatingElements() {
+            const container = document.querySelector('.floating-elements');
+            const elementCount = 15;
+            
+            for (let i = 0; i < elementCount; i++) {
+                const element = document.createElement('div');
+                element.className = 'floating-element';
+                element.style.left = Math.random() * 100 + '%';
+                element.style.animationDelay = Math.random() * 15 + 's';
+                element.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(element);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Signing Out...';
+            button.disabled = true;
+            
+            // Add a smooth transition before redirect
+            setTimeout(() => {
+                window.location.href = '/logout';
+            }, 1000);
+        }
+
+        // Initialize floating elements
+        createFloatingElements();
+
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate profile avatar on load
+            const avatar = document.getElementById('profileAvatar');
+            if (avatar) {
+                setTimeout(() => {
+                    avatar.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        avatar.style.transform = 'scale(1)';
+                    }, 300);
+                }, 500);
+            }
+
+            // Add hover effect to stats cards
+            const statsCards = document.querySelectorAll('[style*="background: rgba"]');
+            statsCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.transition = 'all 0.3s ease';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+
+        // Add keyboard shortcut for logout
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                logout();
+            }
+        });
+
+        // Display success message if just logged in
+        {% if get_flashed_messages() %}
+            {% for message in get_flashed_messages() %}
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'success-message';
+                messageDiv.textContent = '{{ message }}';
+                
+                const card = document.querySelector('.auth-card');
+                card.insertBefore(messageDiv, card.firstChild);
+                
+                setTimeout(() => {
+                    messageDiv.remove();
+                }, 3000);
+            {% endfor %}
+        {% endif %}
+    </script>
 </body>
 </html>
