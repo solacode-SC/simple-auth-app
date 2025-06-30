@@ -104,20 +104,24 @@
         });
 
         // Display success message if just logged in
-        {% if get_flashed_messages() %}
-            {% for message in get_flashed_messages() %}
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'success-message';
-                messageDiv.textContent = '{{ message }}';
-                
-                const card = document.querySelector('.auth-card');
-                card.insertBefore(messageDiv, card.firstChild);
-                
-                setTimeout(() => {
-                    messageDiv.remove();
-                }, 3000);
-            {% endfor %}
-        {% endif %}
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if get_flashed_messages() %}
+                {% for category, message in get_flashed_messages(with_categories=true) %}
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = '{{ "success-message" if category == "success" else "error-message" }}';
+                    messageDiv.textContent = '{{ message }}';
+                    
+                    const card = document.querySelector('.auth-card');
+                    if (card) {
+                        card.insertBefore(messageDiv, card.firstChild);
+                        
+                        setTimeout(() => {
+                            messageDiv.remove();
+                        }, 3000);
+                    }
+                {% endfor %}
+            {% endif %}
+        });
     </script>
 </body>
 </html>

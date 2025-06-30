@@ -73,8 +73,17 @@
 
         // Form submission with loading state
         document.getElementById('loginForm').addEventListener('submit', function(e) {
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
+            const usernameField = document.getElementById('username');
+            const passwordField = document.getElementById('password');
+            
+            if (!usernameField || !passwordField) {
+                e.preventDefault();
+                showMessage('Form fields not found', 'error');
+                return;
+            }
+            
+            const username = usernameField.value.trim();
+            const password = passwordField.value;
             
             if (!username || !password) {
                 e.preventDefault();
@@ -84,15 +93,17 @@
             
             // Add loading state
             const button = this.querySelector('.auth-btn');
-            const originalText = button.textContent;
-            button.textContent = 'Signing In...';
-            button.disabled = true;
-            
-            // Reset button after form submission (in case of error)
-            setTimeout(() => {
-                button.textContent = originalText;
-                button.disabled = false;
-            }, 3000);
+            if (button) {
+                const originalText = button.textContent;
+                button.textContent = 'Signing In...';
+                button.disabled = true;
+                
+                // Reset button after form submission (in case of error)
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }, 3000);
+            }
         });
 
         // Input focus effects
@@ -120,11 +131,13 @@
         });
 
         // Display flash messages if any
-        {% if get_flashed_messages() %}
-            {% for message in get_flashed_messages() %}
-                showMessage('{{ message }}', 'error');
-            {% endfor %}
-        {% endif %}
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if get_flashed_messages() %}
+                {% for category, message in get_flashed_messages(with_categories=true) %}
+                    showMessage('{{ message }}', '{{ "success" if category == "success" else "error" }}');
+                {% endfor %}
+            {% endif %}
+        });
     </script>
 </body>
 </html>

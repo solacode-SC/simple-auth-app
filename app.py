@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 import sqlite3
 
 app = Flask(__name__)
@@ -26,14 +26,30 @@ def signup():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        
+        # Validate input
+        if not username or not password:
+            flash('Please fill in all fields')
+            return render_template('signup.html')
+        
+        if len(username) < 3:
+            flash('Username must be at least 3 characters long')
+            return render_template('signup.html')
+        
+        if len(password) < 4:
+            flash('Password must be at least 4 characters long')
+            return render_template('signup.html')
+        
         conn = sqlite3.connect('users.db')
         c = conn.cursor()
         try:
             c.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
             conn.commit()
+            flash('Account created successfully! Please log in.', 'success')
             return redirect('/login')
-        except:
-            return "Username already exists."
+        except sqlite3.IntegrityError:
+            flash('Username already exists. Please choose a different username.')
+            return render_template('signup.html')
         finally:
             conn.close()
     return render_template('signup.html')
@@ -43,6 +59,11 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        
+        if not username or not password:
+            flash('Please fill in all fields')
+            return render_template('login.html')
+        
         conn = sqlite3.connect('users.db')
         c = conn.cursor()
         c.execute('SELECT * FROM users WHERE username=? AND password=?', (username, password))
@@ -50,9 +71,11 @@ def login():
         conn.close()
         if user:
             session['user'] = username
+            flash('Welcome back!', 'success')
             return redirect('/profile')
         else:
-            return "Invalid credentials"
+            flash('Invalid username or password')
+            return render_template('login.html')
     return render_template('login.html')
 
 @app.route('/profile')
